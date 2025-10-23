@@ -1,0 +1,16 @@
+# Archivos de compilación
+*.class
+
+# Carpetas de build temporales
+bin/
+out/
+target/
+
+# Archivos del IDE
+.vscode/
+.idea/
+*.iml
+
+# Sistema operativo
+.DS_Store
+Thumbs.db
