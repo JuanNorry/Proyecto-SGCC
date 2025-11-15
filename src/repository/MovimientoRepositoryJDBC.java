@@ -82,45 +82,49 @@ public class MovimientoRepositoryJDBC {
     }
 
     public List<String> listarMovimientosComoTexto() {
-        String sql = "SELECT m.id, m.tipo, m.fecha, " +
-                "uvol.nombre AS voluntario, uben.nombre AS beneficiario, " +
-                "p.nombre AS producto, md.cantidad " +
-                "FROM movimiento m " +
-                "JOIN usuario uvol ON uvol.id = m.registrado_por " +
-                "LEFT JOIN usuario uben ON uben.id = m.beneficiario_id " +
-                "JOIN movimiento_detalle md ON md.movimiento_id = m.id " +
-                "JOIN producto p ON p.id = md.producto_id " +
-                "ORDER BY m.id DESC, p.nombre";
+    String sql = "SELECT m.id, m.tipo, m.fecha, " +
+            "uvol.nombre AS voluntario, uben.nombre AS beneficiario, " +
+            "p.nombre AS producto, md.cantidad " +
+            "FROM movimiento m " +
+            "JOIN usuario uvol ON uvol.id = m.registrado_por " +
+            "LEFT JOIN usuario uben ON uben.id = m.beneficiario_id " +
+            "JOIN movimiento_detalle md ON md.movimiento_id = m.id " +
+            "JOIN producto p ON p.id = md.producto_id " +
+            "ORDER BY m.id DESC, p.nombre";
 
-        List<String> lineas = new ArrayList<>();
+    List<String> lineas = new ArrayList<>();
 
-        try (Connection conn = DatabaseConnection.getConnection();
-             Statement st = conn.createStatement();
-             ResultSet rs = st.executeQuery(sql)) {
+    try (Connection conn = DatabaseConnection.getConnection();
+         Statement st = conn.createStatement();
+         ResultSet rs = st.executeQuery(sql)) {
 
-            while (rs.next()) {
-                long id = rs.getLong("id");
-                String tipo = rs.getString("tipo");
-                Timestamp fecha = rs.getTimestamp("fecha");
-                String voluntario = rs.getString("voluntario");
-                String beneficiario = rs.getString("beneficiario");
-                String producto = rs.getString("producto");
-                double cant = rs.getDouble("cantidad");
+        while (rs.next()) {
+            long id = rs.getLong("id");
+            String tipo = rs.getString("tipo");
+            Timestamp fecha = rs.getTimestamp("fecha");
 
-                String linea = String.format(
-                        "#%d %s %s - Vol: %s, Ben: %s, Prod: %s x %.2f",
-                        id, tipo, fecha.toLocalDateTime(),
-                        voluntario,
-                        (beneficiario != null ? beneficiario : "-"),
-                        producto, cant
-                );
-                lineas.add(linea);
-            }
+            String textoVoluntario = "Voluntario";
+            String textoBeneficiario =
+                    (rs.getString("beneficiario") != null) ? "Beneficiario" : "-";
 
-        } catch (SQLException e) {
-            lineas.add("Error consultando movimientos: " + e.getMessage());
+            String producto = rs.getString("producto");
+            double cant = rs.getDouble("cantidad");
+
+            String linea = String.format(
+                    "#%d %s %s - Vol: %s, Ben: %s, Prod: %s x %.2f",
+                    id, tipo, fecha.toLocalDateTime(),
+                    textoVoluntario,
+                    textoBeneficiario,
+                    producto, cant
+            );
+            lineas.add(linea);
         }
 
-        return lineas;
+    } catch (SQLException e) {
+        lineas.add("Error consultando movimientos: " + e.getMessage());
     }
+
+    return lineas;
+}
+
 }

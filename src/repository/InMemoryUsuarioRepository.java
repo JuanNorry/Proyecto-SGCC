@@ -13,7 +13,7 @@ public class InMemoryUsuarioRepository implements UsuarioRepository {
     public InMemoryUsuarioRepository() {
         usuarios.add(new Usuario(1L, "Admin", "admin@sgcc.local", RolUsuario.ADMIN));
         usuarios.add(new Usuario(2L, "Voluntario", "vol@sgcc.local", RolUsuario.VOLUNTARIO));
-        usuarios.add(new Usuario(10L, "Ana Beneficiaria", "ana@sgcc.local", RolUsuario.BENEFICIARIO));
+        usuarios.add(new Usuario(10L, "Beneficiario", "ben@sgcc.local", RolUsuario.BENEFICIARIO));
     }
 
     @Override public List<Usuario> findAll() { return usuarios; }
