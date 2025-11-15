@@ -10,8 +10,6 @@ import javafx.stage.Stage;
 import model.AccionInterna;
 import model.OrigenMovimiento;
 
-import java.util.Optional;
-
 public class MainView extends Application {
 
     private final MainController controller = new MainController();
@@ -20,24 +18,34 @@ public class MainView extends Application {
     public void start(Stage stage) {
         Button btnIngreso = new Button("Registrar INGRESO");
         Button btnEntrega = new Button("Registrar ENTREGA");
-        Button btnStock = new Button("Ver STOCK");
+        Button btnStock   = new Button("Ver STOCK");
+        Button btnMovsBD  = new Button("Ver MOVIMIENTOS (BD)");
 
         btnIngreso.setOnAction(e -> registrarIngreso());
         btnEntrega.setOnAction(e -> registrarEntrega());
         btnStock.setOnAction(e -> verStock());
+        btnMovsBD.setOnAction(e -> verMovimientosBD());
 
-        VBox root = new VBox(12, new Label("SGCC - Prototipo"), btnIngreso, btnEntrega, btnStock);
+        VBox root = new VBox(
+                12,
+                new Label("SGCC - Prototipo"),
+                btnIngreso,
+                btnEntrega,
+                btnStock,
+                btnMovsBD
+        );
         root.setPadding(new Insets(16));
 
-        stage.setScene(new Scene(root, 420, 220));
+        stage.setScene(new Scene(root, 420, 260));
         stage.setTitle("SGCC - Prototipo");
         stage.show();
     }
 
     private void registrarIngreso() {
-        ChoiceDialog<OrigenMovimiento> dlg = new ChoiceDialog<>(OrigenMovimiento.DONACION, OrigenMovimiento.values());
+        ChoiceDialog<OrigenMovimiento> dlg =
+                new ChoiceDialog<>(OrigenMovimiento.DONACION, OrigenMovimiento.values());
         dlg.setHeaderText("Seleccione origen del ingreso");
-        Optional<OrigenMovimiento> origen = dlg.showAndWait();
+        var origen = dlg.showAndWait();
         if (origen.isEmpty()) return;
 
         Long prodId = pedirLong("ID de producto (1-5)");
@@ -46,18 +54,24 @@ public class MainView extends Application {
         Double cantidad = pedirDouble("Cantidad a ingresar");
         if (cantidad == null) return;
 
-        String resultado = controller.registrarIngreso(1L, origen.get(),
+        String resultado = controller.registrarIngreso(
+                1L,
+                origen.get(),
                 (origen.get() == OrigenMovimiento.ACCION_INTERNA ? AccionInterna.AJUSTE : null),
-                prodId, cantidad);
+                prodId,
+                cantidad
+        );
         mostrarInfo(resultado);
     }
 
     private void registrarEntrega() {
         Long prodId = pedirLong("ID de producto (1-5)");
         if (prodId == null) return;
+
         Double cantidad = pedirDouble("Cantidad a entregar");
         if (cantidad == null) return;
 
+        // 2L = voluntario, 10L = beneficiario de ejemplo cargados en el repo
         String resultado = controller.registrarEntrega(2L, 10L, prodId, cantidad);
         mostrarInfo(resultado);
     }
@@ -67,13 +81,23 @@ public class MainView extends Application {
         mostrarInfo(stock);
     }
 
+    // NUEVO: muestra los movimientos que están en la BD (JOIN movimiento + detalles)
+    private void verMovimientosBD() {
+        String texto = controller.obtenerMovimientosBD();
+        mostrarInfo(texto);
+    }
+
     private Long pedirLong(String prompt) {
         TextInputDialog dlg = new TextInputDialog();
         dlg.setHeaderText(prompt);
         var r = dlg.showAndWait();
         if (r.isEmpty()) return null;
-        try { return Long.parseLong(r.get().trim()); }
-        catch (NumberFormatException ex) { mostrarError("Número inválido"); return null; }
+        try {
+            return Long.parseLong(r.get().trim());
+        } catch (NumberFormatException ex) {
+            mostrarError("Número inválido");
+            return null;
+        }
     }
 
     private Double pedirDouble(String prompt) {
@@ -81,8 +105,12 @@ public class MainView extends Application {
         dlg.setHeaderText(prompt);
         var r = dlg.showAndWait();
         if (r.isEmpty()) return null;
-        try { return Double.parseDouble(r.get().trim()); }
-        catch (NumberFormatException ex) { mostrarError("Número inválido"); return null; }
+        try {
+            return Double.parseDouble(r.get().trim());
+        } catch (NumberFormatException ex) {
+            mostrarError("Número inválido");
+            return null;
+        }
     }
 
     private void mostrarInfo(String msg) {
@@ -97,5 +125,7 @@ public class MainView extends Application {
         a.showAndWait();
     }
 
-    public static void main(String[] args) { launch(args); }
+    public static void main(String[] args) {
+        launch(args);
+    }
 }

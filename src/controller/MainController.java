@@ -2,9 +2,13 @@ package controller;
 
 import exceptions.StockInsuficienteException;
 import exceptions.ValidacionException;
-import model.*;
+import model.AccionInterna;
+import model.Movimiento;
+import model.OrigenMovimiento;
+import model.TipoMovimiento;
 import repository.InMemoryProductoRepository;
 import repository.InMemoryUsuarioRepository;
+import repository.MovimientoRepositoryJDBC;
 import repository.ProductoRepository;
 import repository.UsuarioRepository;
 import service.InventarioService;
@@ -18,23 +22,41 @@ public class MainController {
     private final UsuarioRepository usuarioRepo = new InMemoryUsuarioRepository();
     private final InventarioService inventario = new InventarioService(productoRepo, usuarioRepo);
 
-    public String registrarIngreso(Long usuarioId, OrigenMovimiento origen, AccionInterna accion, Long prodId, double cantidad) {
+    private final MovimientoRepositoryJDBC movimientoRepo = new MovimientoRepositoryJDBC();
+
+
+    public String registrarIngreso(Long usuarioId,
+                                   OrigenMovimiento origen,
+                                   AccionInterna accion,
+                                   Long prodId,
+                                   double cantidad) {
         try {
             Map<Long, Double> items = new HashMap<>();
             items.put(prodId, cantidad);
-            inventario.registrarIngreso(usuarioId, origen, accion, items);
+
+            Movimiento mov = inventario.registrarIngreso(usuarioId, origen, accion, items);
+
+            movimientoRepo.guardar(mov);
+
             return "Ingreso registrado correctamente.";
         } catch (ValidacionException e) {
             return "Error: " + e.getMessage();
         }
     }
 
-    public String registrarEntrega(Long voluntarioId, Long beneficiarioId, Long prodId, double cantidad) {
+    public String registrarEntrega(Long voluntarioId,
+                                   Long beneficiarioId,
+                                   Long prodId,
+                                   double cantidad) {
         try {
             Map<Long, Double> items = new HashMap<>();
             items.put(prodId, cantidad);
-            inventario.registrarEntrega(voluntarioId, beneficiarioId, items);
-            return "Entrega registrada correctamente.";
+
+            Movimiento mov = inventario.registrarEntrega(voluntarioId, beneficiarioId, items);
+
+            movimientoRepo.guardar(mov);
+
+            return "Entrega registrado correctamente.";
         } catch (StockInsuficienteException | ValidacionException e) {
             return "Error: " + e.getMessage();
         }
@@ -42,5 +64,10 @@ public class MainController {
 
     public String obtenerStock() {
         return String.join("\n", inventario.stockComoLineasOrdenadoPorNombre());
+    }
+
+    public String obtenerMovimientosBD() {
+        var lineas = movimientoRepo.listarMovimientosComoTexto();
+        return String.join("\n", lineas);
     }
 }
