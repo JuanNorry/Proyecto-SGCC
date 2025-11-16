@@ -133,19 +133,6 @@ public class MainView extends Application {
         mostrarInfo(texto);
     }
 
-    private Long pedirLong(String prompt) {
-        TextInputDialog dlg = new TextInputDialog();
-        dlg.setHeaderText(prompt);
-        var r = dlg.showAndWait();
-        if (r.isEmpty()) return null;
-        try {
-            return Long.parseLong(r.get().trim());
-        } catch (NumberFormatException ex) {
-            mostrarError("Número inválido");
-            return null;
-        }
-    }
-
     private Double pedirDouble(String prompt) {
         TextInputDialog dlg = new TextInputDialog();
         dlg.setHeaderText(prompt);
